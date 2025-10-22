@@ -55,6 +55,16 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
-        return response()->json($request->user());
+        $user = $request->user()->load('roles.permissions');
+
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'roles' => $user->roles->pluck('slug'),
+                'permissions' => $user->roles->pluck('permissions')->flatten()->pluck('slug')->unique(),
+            ]
+        ]);
     }
 }

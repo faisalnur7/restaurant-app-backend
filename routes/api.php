@@ -12,6 +12,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PermissionController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -30,6 +31,13 @@ Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'user'])
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::prefix('permissions')->group(function () {
+        Route::get('/', [PermissionController::class, 'index']);
+        Route::post('/', [PermissionController::class, 'store']);
+        Route::delete('/{permission}', [PermissionController::class, 'destroy']);
+    });
+
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'overview']);

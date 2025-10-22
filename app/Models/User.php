@@ -55,7 +55,34 @@ class User extends Authenticatable
         ];
     }
 
-    public function role(){
-        return $this->belongsTo(Role::class,'role_id');
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'role_user');
+    }
+
+    /**
+     * User has many permissions through roles
+     */
+    public function permissions()
+    {
+        return $this->roles->flatMap(function ($role) {
+            return $role->permissions;
+        })->unique('id');
+    }
+
+    /**
+     * Check if user has a specific role
+     */
+    public function hasRole($roleSlug)
+    {
+        return $this->roles->pluck('slug')->contains($roleSlug);
+    }
+
+    /**
+     * Check if user has a specific permission
+     */
+    public function hasPermission($permissionSlug)
+    {
+        return $this->permissions()->pluck('slug')->contains($permissionSlug);
     }
 }

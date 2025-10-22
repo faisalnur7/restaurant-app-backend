@@ -2,71 +2,64 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Role;
-
+use App\Models\Permission;
+use Illuminate\Http\Request;
 
 class RoleController extends Controller
 {
-    // List all roles
     public function index()
     {
-        $roles = Role::orderBy('id', 'desc')->get();
-        return response()->json($roles);
+        return Role::with('permissions')->get();
     }
 
-    // Create a new role
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|unique:roles,name',
+            'permissions' => 'array',
         ]);
 
         $role = Role::create([
             'name' => $request->name,
+            'slug' => strtolower(str_replace(' ', '_', $request->name)),
         ]);
 
-        return response()->json($role, 201);
-    }
-
-    // Show a single role
-    public function show($id)
-    {
-        $role = Role::find($id);
-        if (!$role) {
-            return response()->json(['message' => 'Role not found'], 404);
+        if ($request->permissions) {
+            $role->permissions()->sync($request->permissions);
         }
-        return response()->json($role);
+
+        return response()->json($role->load('permissions'), 201);
     }
 
-    // Update a role
     public function update(Request $request, $id)
     {
-        $role = Role::find($id);
-        if (!$role) {
-            return response()->json(['message' => 'Role not found'], 404);
-        }
+        $role = Role::findOrFail($id);
 
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|unique:roles,name,' . $role->id,
+            'permissions' => 'array',
         ]);
 
         $role->update([
             'name' => $request->name,
+            'slug' => strtolower(str_replace(' ', '_', $request->name)),
         ]);
 
-        return response()->json($role);
-    }
-
-    // Delete a role
-    public function destroy($id)
-    {
-        $role = Role::find($id);
-        if (!$role) {
-            return response()->json(['message' => 'Role not found'], 404);
+        if ($request->permissions) {
+            $role->permissions()->sync($request->permissions);
         }
 
+        return response()->json($role->load('permissions'));
+    }
+
+    public function destroy($id)
+    {
+        $role = Role::findOrFail($id);
+        $role->permissions()->detach();
+        $role->users()->detach();
         $role->delete();
-        return response()->json(['message' => 'Role deleted']);
+
+        return response()->json(['message' => 'Role deleted successfully']);
     }
 }
