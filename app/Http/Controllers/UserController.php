@@ -47,6 +47,10 @@ class UserController extends Controller
 
         $user = User::create($data);
 
+        if (isset($data['role_id'])) {
+            $user->roles()->sync([$data['role_id']]);
+        }
+
         return response()->json([
             'message' => 'User created successfully!',
             'user' => $user->load('roles'),
@@ -65,51 +69,51 @@ class UserController extends Controller
      * Update the specified user.
      */
     public function update(Request $request, User $user)
-{
-    $data = $request->validate([
-        'role_id' => 'nullable|exists:roles,id', // single role ID
-        'name' => 'required|string|max:255',
-        'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
-        'password' => 'nullable|string|min:6',
-        'phone' => 'nullable|string|max:20',
-        'status' => 'required|boolean',
-        'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-    ]);
+    {
+        $data = $request->validate([
+            'role_id' => 'nullable|exists:roles,id', // single role ID
+            'name' => 'required|string|max:255',
+            'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
+            'password' => 'nullable|string|min:6',
+            'phone' => 'nullable|string|max:20',
+            'status' => 'required|boolean',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        ]);
 
-    // Handle profile picture
-    if ($request->hasFile('profile_picture')) {
-        if ($user->profile_picture && File::exists(public_path($user->profile_picture))) {
-            File::delete(public_path($user->profile_picture));
+        // Handle profile picture
+        if ($request->hasFile('profile_picture')) {
+            if ($user->profile_picture && File::exists(public_path($user->profile_picture))) {
+                File::delete(public_path($user->profile_picture));
+            }
+            $filename = time() . '_' . $request->file('profile_picture')->getClientOriginalName();
+            $request->file('profile_picture')->move(public_path('uploads/users'), $filename);
+            $data['profile_picture'] = 'uploads/users/' . $filename;
+        } else {
+            $data['profile_picture'] = $user->profile_picture;
         }
-        $filename = time() . '_' . $request->file('profile_picture')->getClientOriginalName();
-        $request->file('profile_picture')->move(public_path('uploads/users'), $filename);
-        $data['profile_picture'] = 'uploads/users/' . $filename;
-    } else {
-        $data['profile_picture'] = $user->profile_picture;
+
+        // Hash password if provided
+        if (!empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            unset($data['password']);
+        }
+
+        // Update basic user info
+        $user->update($data);
+
+        // Sync single role in pivot table
+        if (isset($data['role_id'])) {
+            $user->roles()->sync([$data['role_id']]);
+        } else {
+            $user->roles()->sync([]); // remove all roles if null
+        }
+
+        return response()->json([
+            'message' => 'User updated successfully!',
+            'user' => $user->load('roles'), // eager load roles for frontend
+        ], 200);
     }
-
-    // Hash password if provided
-    if (!empty($data['password'])) {
-        $data['password'] = Hash::make($data['password']);
-    } else {
-        unset($data['password']);
-    }
-
-    // Update basic user info
-    $user->update($data);
-
-    // Sync single role in pivot table
-    if (isset($data['role_id'])) {
-        $user->roles()->sync([$data['role_id']]);
-    } else {
-        $user->roles()->sync([]); // remove all roles if null
-    }
-
-    return response()->json([
-        'message' => 'User updated successfully!',
-        'user' => $user->load('roles'), // eager load roles for frontend
-    ], 200);
-}
 
     /**
      * Remove the specified user.
@@ -124,4 +128,14 @@ class UserController extends Controller
 
         return response()->json(['message' => 'User deleted successfully!']);
     }
+
+    public function waiters()
+    {
+        $waiters = User::whereHas('roles', function ($q) {
+            $q->where('name', 'Waiter');
+        })->get();
+
+        return response()->json($waiters);
+    }
+
 }

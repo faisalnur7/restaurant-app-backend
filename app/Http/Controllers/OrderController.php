@@ -60,10 +60,13 @@ class OrderController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'nullable|exists:users,id',
+            'served_by' => 'nullable|exists:users,id',
+            'customer_id' => 'nullable|exists:customers,id',
             'table_id' => 'nullable|exists:tables,id',
             'order_type' => 'required|in:dine_in,take_away,delivery',
             'subtotal' => 'required|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',
+            'due' => 'nullable|numeric|min:0',
             'tax' => 'nullable|numeric|min:0',
             'total' => 'required|numeric|min:0',
             'status' => 'nullable|in:pending,confirmed,preparing,served,completed,cancelled',
@@ -115,11 +118,15 @@ class OrderController extends Controller
             'table_id' => 'nullable|exists:tables,id',
             'subtotal' => 'required|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',
+            'served_by' => 'nullable|exists:users,id',
+            'customer_id' => 'nullable|exists:customers,id',
+            'due' => 'nullable|numeric|min:0',
             'tax' => 'nullable|numeric|min:0',
             'total' => 'required|numeric|min:0',
             'status' => 'nullable|in:pending,confirmed,preparing,served,completed,cancelled',
             'payment_status' => 'nullable|in:unpaid,paid,partial',
             'payment_method' => 'nullable|string|max:100',
+            'order_type' => 'nullable|string|max:100',
             'items' => 'array|required',
             'items.*.id' => 'nullable|exists:order_items,id', // for existing items
             'items.*.product_id' => 'required|exists:products,id',
@@ -129,13 +136,17 @@ class OrderController extends Controller
 
         // Update order data
         $order->update([
-            'table_id' => $validated['table_id'] ?? null,
+            'customer_id' => $validated['customer_id'] ?? $order->customer_id,
+            'table_id' => $validated['table_id'] ?? $order->table_id,
+            'served_by' => $validated['served_by'] ?? $order->served_by,
             'subtotal' => $validated['subtotal'],
             'discount' => $validated['discount'] ?? 0,
+            'due' => $validated['due'] ?? 0,
             'tax' => $validated['tax'] ?? 0,
             'total' => $validated['total'],
             'status' => $validated['status'] ?? $order->status,
             'payment_status' => $validated['payment_status'] ?? $order->payment_status,
+            'order_type' => $validated['order_type'] ?? $order->order_type,
             'payment_method' => $validated['payment_method'] ?? $order->payment_method,
         ]);
 
@@ -167,10 +178,7 @@ class OrderController extends Controller
             }
         }
 
-        return response()->json([
-            'message' => 'Order updated successfully',
-            'order' => $order->load('items'),
-        ], 200);
+        return response()->json($order->load('items.product'), 200);
     }
 
 
