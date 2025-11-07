@@ -111,13 +111,17 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('orders')->group(function () {
         Route::get('/recent', [OrderController::class, 'recent']);
-        Route::get('/', [OrderController::class, 'index']);
-        Route::post('/', [OrderController::class, 'store']);
         Route::get('/list', [OrderController::class, 'order_list']);
         Route::get('/kot', [OrderController::class, 'kot']);
+
+        Route::get('/', [OrderController::class, 'index']);
+        Route::post('/', [OrderController::class, 'store']);
+
+        Route::put('/status/{order}', [OrderController::class, 'update_status']);
+
+        // Now the dynamic routes last
         Route::get('/{order}', [OrderController::class, 'show']);
         Route::put('/{order}', [OrderController::class, 'update']);
-        Route::put('status/{order}', [OrderController::class, 'update_status']);
         Route::delete('/{order}', [OrderController::class, 'destroy']);
     });
 
@@ -129,5 +133,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [CustomerController::class, 'destroy']);
     });
 
+    Route::get('/billing_data',[OrderController::class,'billing_data']);
 });
 

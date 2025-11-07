@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Category;
+use App\Models\Customer;
+use App\Models\Table;
+use App\Models\User;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
 
@@ -203,6 +207,16 @@ class OrderController extends Controller
         $order->load('user', 'table', 'items.product');
 
         return view('orders.show', compact('order'));
+    }
+
+    public function billing_data(Request $request){
+        $data['categories'] = Category::with('subcategories')->orderBy('id', 'desc')->get();
+        $data['customers'] = Customer::latest()->get();
+        $data['tables'] = Table::orderBy('id')->get();
+        $data['waiters'] = User::whereHas('roles', function ($q) {
+            $q->where('name', 'Waiter');
+        })->get();
+        return response()->json($data);
     }
     
 }

@@ -9,3 +9,7 @@ Route::get('/', function () {
 
 
 Route::get('/orders/{order}', [OrderController::class, 'show_order'])->name('orders.show');
+
+Route::get('/{any}', function () {
+    return file_get_contents(public_path('index.html'));
+})->where('any', '.*');
