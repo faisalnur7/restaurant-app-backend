@@ -106,6 +106,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/waiters', [UserController::class, 'waiters']);
         Route::get('/{user}', [UserController::class, 'show']);
         Route::put('/{user}', [UserController::class, 'update']);
+        Route::post('/update_profile', [UserController::class, 'update_profile']);
         Route::delete('/{user}', [UserController::class, 'destroy']);
     });
 

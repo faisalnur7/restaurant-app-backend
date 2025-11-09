@@ -62,6 +62,10 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'role_id' => $user->role_id,
+                'profile_picture' => $user->profile_picture,
+                'phone' => $user->phone,
+                'full_address' => $user->full_address,
                 'roles' => $user->roles->pluck('slug'),
                 'permissions' => $user->roles->pluck('permissions')->flatten()->pluck('slug')->unique(),
             ]

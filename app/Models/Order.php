@@ -25,6 +25,10 @@ class Order extends Model
         'payment_method',
     ];
 
+    protected $casts = [
+        'payment_status' => 'string',
+    ];
+
     // Relationships
     public function items()
     {

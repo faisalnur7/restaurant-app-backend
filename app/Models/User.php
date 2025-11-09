@@ -26,7 +26,8 @@ class User extends Authenticatable
         'password',
         'phone',
         'status',
-        'profile_picture'
+        'profile_picture',
+        'full_address'
     ];
 
     const ADMIN = 1;
