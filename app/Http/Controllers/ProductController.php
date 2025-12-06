@@ -14,23 +14,6 @@ class ProductController extends Controller
         return Product::with('category')->latest()->get();
     }
 
-    // public function list(Request $request){
-        
-    //     $query = Product::query();
-
-    //     if ($request->has('sub_category_id')) {
-    //         $query->where('sub_category_id', $request->sub_category_id);
-    //     } elseif ($request->has('category_id')) {
-    //         $query->where('category_id', $request->category_id);
-    //     }
-
-    //     // Optional: eager load relationships for performance
-    //     $products = $query
-    //         ->orderBy('name')
-    //         ->get();
-
-    //     return response()->json($products);
-    // }
 
     public function list(Request $request)
     {

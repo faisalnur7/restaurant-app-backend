@@ -27,6 +27,7 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'role_id' => 'nullable|exists:roles,id',
+            'branch_id' => 'nullable|exists:branches,id',
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
@@ -71,7 +72,8 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $data = $request->validate([
-            'role_id' => 'nullable|exists:roles,id', // single role ID
+            'role_id' => 'nullable|exists:roles,id',
+            'branch_id' => 'nullable|exists:branches,id',
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:6',

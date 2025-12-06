@@ -21,6 +21,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'role_id',
+        'branch_id',
         'name',
         'email',
         'password',
@@ -59,6 +60,11 @@ class User extends Authenticatable
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'role_user');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
     }
 
     /**

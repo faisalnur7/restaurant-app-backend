@@ -14,6 +14,8 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\RestaurantSettingController;
+use App\Http\Controllers\BranchController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -135,5 +137,18 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::get('/billing_data',[OrderController::class,'billing_data']);
+    Route::prefix('settings')->group(function () {
+        Route::get('/', [RestaurantSettingController::class, 'index']);
+        Route::post('/update', [RestaurantSettingController::class, 'update']);
+    });
+
+    // Branch
+    Route::prefix('branches')->group(function () {
+        Route::get('/', [BranchController::class, 'index']);
+        Route::post('/', [BranchController::class, 'store']);
+        Route::put('/{id}', [BranchController::class, 'update']);
+        Route::delete('/{id}', [BranchController::class, 'destroy']);
+    });
+
 });
 
